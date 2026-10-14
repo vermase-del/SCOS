@@ -1,7 +1,7 @@
 # SCOS: Smart Community Operating System (Apartment Management System)
 ### Enterprise-Grade, CI/CD Enabled Base Module Application
 
-Modernized from legacy Infor/SoftBrands HMS (ExtJS 4.2 + Monolithic Java + 1,300+ MSSQL table schema) into a cloud-native, multi-tenant residential community management platform.
+A cloud-native, multi-tenant residential community management platform, informed by an existing property-management schema and redesigned for maintainability, security, and clear domain ownership.
 
 ---
 
