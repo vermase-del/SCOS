@@ -135,13 +135,15 @@ public class WorkOrderService {
     public WorkOrderDto submitFeedback(UUID id, UUID communityId, SubmitFeedbackRequest req, String username) {
         UserEntity actor=requireUser(username); requireCommunityMember(actor.getId(),communityId);
         WorkOrderEntity wo=findScoped(id,communityId);
+        String actorRole=roleFor(actor.getId(),communityId);
+        if(!actor.getId().equals(wo.getReportedByUserId()) && !Set.of("OWNER","TENANT","RESIDENT").contains(actorRole))
+            throw new SecurityException("Only the reporter or a resident can submit resolution feedback");
         if(wo.getStatus()!=WorkOrderStatus.RESOLVED) throw new IllegalArgumentException("Feedback is accepted only after resolution");
         if(feedback.findByWorkOrderId(id).isPresent()) throw new IllegalArgumentException("Feedback has already been submitted");
         WorkOrderFeedbackEntity f=new WorkOrderFeedbackEntity(); f.setWorkOrderId(id); f.setResidentUserId(actor.getId()); f.setRating(req.rating());
         f.setFeedbackComments(req.feedbackComments()); f.setResolutionConfirmed(Boolean.TRUE.equals(req.resolutionConfirmed())); feedback.save(f);
         if(f.isResolutionConfirmed()) {
-            String role=roleFor(actor.getId(),communityId);
-            stateMachine.validateTransition(WorkOrderStatus.RESOLVED,WorkOrderStatus.CLOSED,role,"Resident verified resolution");
+            stateMachine.validateTransition(WorkOrderStatus.RESOLVED,WorkOrderStatus.CLOSED,actorRole,"Resident verified resolution");
             wo.setStatus(WorkOrderStatus.CLOSED); wo.setUpdatedBy(username); wo=workOrders.save(wo);
             addActivity(wo,actor.getId(),ActivityType.VERIFIED_CLOSED,WorkOrderStatus.RESOLVED,WorkOrderStatus.CLOSED,"Resident verified resolution; rating "+req.rating()+"/5");
         } else {
