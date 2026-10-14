@@ -9,4 +9,5 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrderEntity, UUID
  long countByCommunityIdAndStatusIn(UUID communityId, Collection<WorkOrderStatus> statuses);
  long countByCommunityIdAndStatus(UUID communityId, WorkOrderStatus status);
  long countByCommunityIdAndSlaBreachedTrueAndStatusNotIn(UUID communityId, Collection<WorkOrderStatus> statuses);
+ long countByCommunityIdAndSlaDueAtBeforeAndStatusNotIn(UUID communityId, java.time.Instant now, Collection<WorkOrderStatus> statuses);
 }
