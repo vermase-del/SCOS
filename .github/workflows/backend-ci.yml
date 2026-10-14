@@ -58,6 +58,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/scos_db_test
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
           SPRING_DATASOURCE_USERNAME: scos_test_user
           SPRING_DATASOURCE_PASSWORD: scos_test_password
         run: mvn test -B

@@ -1,0 +1,2 @@
+package com.scos.modules.maintenance.entity;
+public enum ActivityType { CREATED, STATUS_TRANSITION, ASSIGNMENT, NOTE_ADDED, HOLD_PLACED, HOLD_RESUMED, COST_RECORDED, VERIFIED_CLOSED, SLA_BREACHED }

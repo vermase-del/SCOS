@@ -1,0 +1,45 @@
+package com.scos.modules.maintenance.dto;
+
+import com.scos.modules.maintenance.entity.*;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
+
+public record WorkOrderDto(
+    UUID id,
+    UUID communityId,
+    String ticketNumber,
+    String title,
+    String description,
+    WorkOrderScope scope,
+    UUID buildingId,
+    UUID unitId,
+    String locationDetails,
+    WorkOrderCategory category,
+    WorkOrderPriority priority,
+    WorkOrderStatus status,
+    UUID reportedByUserId,
+    UUID assignedTechnicianId,
+    Instant slaDueAt,
+    boolean slaBreached,
+    BigDecimal totalCost,
+    String currencyCode,
+    long version,
+    Instant createdAt,
+    Instant updatedAt,
+    List<WorkOrderActivityDto> activities,
+    List<WorkOrderCostLineDto> costs,
+    WorkOrderType workOrderType,
+    String reasonCode,
+    String departmentCode,
+    Instant plannedStartAt,
+    Instant plannedEndAt,
+    Instant actualStartAt,
+    Instant resolvedAt,
+    boolean outOfService,
+    String serviceType,
+    UUID assetId,
+    String assetName,
+    String assetCode,
+    String externalReference
+) {}

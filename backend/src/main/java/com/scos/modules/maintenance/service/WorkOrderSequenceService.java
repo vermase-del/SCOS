@@ -1,0 +1,3 @@
+package com.scos.modules.maintenance.service;
+import com.scos.modules.maintenance.repository.WorkOrderSequenceRepository; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.time.Year; import java.util.UUID;
+@Service public class WorkOrderSequenceService { private final WorkOrderSequenceRepository repository; public WorkOrderSequenceService(WorkOrderSequenceRepository repository){this.repository=repository;} @Transactional public String generateTicketNumber(UUID communityId){int year=Year.now(java.time.ZoneOffset.UTC).getValue();repository.increment(communityId,year);long value=repository.current(communityId,year);return String.format(java.util.Locale.ROOT,"WO-%d-%04d",year,value);} }
