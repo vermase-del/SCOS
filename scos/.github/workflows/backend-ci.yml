@@ -1,0 +1,99 @@
+name: SCOS Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+
+env:
+  JAVA_VERSION: '21'
+  DISTRIBUTION: 'temurin'
+  DOCKER_IMAGE_NAME: 'scos/scos-core-backend'
+
+jobs:
+  build-and-test:
+    name: Build, Unit Test & Code Quality
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: scos_db_test
+          POSTGRES_USER: scos_test_user
+          POSTGRES_PASSWORD: scos_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          cache: maven
+
+      - name: Build with Maven
+        working-directory: ./backend
+        run: mvn clean compile -B
+
+      - name: Run Unit & Slice Tests
+        working-directory: ./backend
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/scos_db_test
+          SPRING_DATASOURCE_USERNAME: scos_test_user
+          SPRING_DATASOURCE_PASSWORD: scos_test_password
+        run: mvn test -B
+
+      - name: Verify Code Coverage (JaCoCo)
+        working-directory: ./backend
+        run: mvn jacoco:report -B
+
+      - name: Package JAR Artifact
+        working-directory: ./backend
+        run: mvn package -DskipTests -B
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scos-backend-jar
+          path: backend/target/*.jar
+          retention-days: 7
+
+  docker-build:
+    name: Build & Push Docker Image
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Build Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./docker/Dockerfile.backend
+          push: false
+          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}, ${{ env.DOCKER_IMAGE_NAME }}:latest

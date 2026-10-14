@@ -1,0 +1,185 @@
+<div class="matrix-page">
+  <!-- Header Bar -->
+  <div class="matrix-header glass-panel">
+    <div class="header-left">
+      <h2>Residential Floor Matrix</h2>
+      <p>Visual 2D Apartment Occupancy & Status Visualizer</p>
+    </div>
+
+    <!-- Tower Dropdown & Filter Chips -->
+    <div class="header-controls">
+      <div class="building-select" *ngIf="buildings().length > 0">
+        <label>Select Tower:</label>
+        <select
+          [ngModel]="selectedBuildingId()"
+          (ngModelChange)="onBuildingChange($event)"
+          class="form-control tower-dropdown"
+        >
+          <option *ngFor="let b of buildings()" [value]="b.id">{{ b.name }} ({{ b.totalFloors }} Floors)</option>
+        </select>
+      </div>
+
+      <div class="status-filters">
+        <button
+          class="filter-chip"
+          [class.active]="selectedFilter() === 'ALL'"
+          (click)="setFilter('ALL')"
+        >
+          All
+        </button>
+        <button
+          class="filter-chip chip-vacant"
+          [class.active]="selectedFilter() === 'VACANT'"
+          (click)="setFilter('VACANT')"
+        >
+          Vacant
+        </button>
+        <button
+          class="filter-chip chip-owner"
+          [class.active]="selectedFilter() === 'OWNER_OCCUPIED'"
+          (click)="setFilter('OWNER_OCCUPIED')"
+        >
+          Owner
+        </button>
+        <button
+          class="filter-chip chip-tenant"
+          [class.active]="selectedFilter() === 'TENANT_OCCUPIED'"
+          (click)="setFilter('TENANT_OCCUPIED')"
+        >
+          Tenant
+        </button>
+        <button
+          class="filter-chip chip-maint"
+          [class.active]="selectedFilter() === 'UNDER_MAINTENANCE'"
+          (click)="setFilter('UNDER_MAINTENANCE')"
+        >
+          Maintenance
+        </button>
+        <button
+          class="filter-chip chip-notice"
+          [class.active]="selectedFilter() === 'NOTICE_PERIOD'"
+          (click)="setFilter('NOTICE_PERIOD')"
+        >
+          Notice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state glass-panel">
+    <div class="spinner"></div>
+    <p>Loading visual floor matrix...</p>
+  </div>
+
+  <!-- Floor-by-Floor Matrix Grid -->
+  <div class="matrix-viewport glass-panel" *ngIf="!loading() && buildingMatrix() as matrix">
+    <div class="tower-summary-bar">
+      <span class="tower-title">{{ matrix.buildingName }}</span>
+      <span class="tower-stats">{{ matrix.totalFloors }} Floors | {{ matrix.totalUnits }} Total Units</span>
+    </div>
+
+    <div class="floors-container">
+      <div class="floor-row" *ngFor="let floor of filteredFloors()">
+        <div class="floor-label">
+          <span class="floor-badge">Floor {{ floor.floorNumber }}</span>
+        </div>
+
+        <div class="units-strip">
+          <div
+            *ngFor="let unit of floor.units"
+            class="unit-card"
+            [ngClass]="getStatusClass(unit.occupancyStatus)"
+            (click)="selectUnit(unit)"
+            [class.selected]="selectedUnit()?.id === unit.id"
+          >
+            <div class="card-top">
+              <span class="unit-num">{{ unit.unitNumber }}</span>
+              <span class="unit-type">{{ unit.unitType }}</span>
+            </div>
+            <div class="card-status">{{ formatStatus(unit.occupancyStatus) }}</div>
+          </div>
+          <div *ngIf="floor.units.length === 0" class="no-units-match">
+            No units match selected filter
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unit Detail Slide-Over Drawer -->
+  <div class="unit-drawer glass-panel" *ngIf="selectedUnit() as unit">
+    <div class="drawer-header">
+      <div>
+        <h3>Apartment {{ unit.unitNumber }}</h3>
+        <span class="badge" [ngClass]="getStatusClass(unit.occupancyStatus)">
+          {{ formatStatus(unit.occupancyStatus) }}
+        </span>
+      </div>
+      <button class="btn-close" (click)="closeDrawer()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="detail-row">
+        <span class="label">Unit Type</span>
+        <span class="value">{{ unit.unitType }} Luxury Flat</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Carpet Area</span>
+        <span class="value">1,550 sq.ft. (Super: 1,920 sq.ft.)</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Maintenance Due</span>
+        <span class="value">₹ 4,800 / month</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Electric Meter</span>
+        <span class="value">BESCOM-A1201-99</span>
+      </div>
+
+      <hr class="divider" />
+
+      <h4>Quick Status Transition</h4>
+      <div class="status-actions">
+        <button
+          class="btn-status status-btn-vacant"
+          [disabled]="unit.occupancyStatus === 'VACANT'"
+          (click)="changeStatus(unit, 'VACANT')"
+        >
+          Mark Vacant
+        </button>
+        <button
+          class="btn-status status-btn-owner"
+          [disabled]="unit.occupancyStatus === 'OWNER_OCCUPIED'"
+          (click)="changeStatus(unit, 'OWNER_OCCUPIED')"
+        >
+          Owner Occupied
+        </button>
+        <button
+          class="btn-status status-btn-tenant"
+          [disabled]="unit.occupancyStatus === 'TENANT_OCCUPIED'"
+          (click)="changeStatus(unit, 'TENANT_OCCUPIED')"
+        >
+          Tenant Occupied
+        </button>
+        <button
+          class="btn-status status-btn-maint"
+          [disabled]="unit.occupancyStatus === 'UNDER_MAINTENANCE'"
+          (click)="changeStatus(unit, 'UNDER_MAINTENANCE')"
+        >
+          Under Maintenance
+        </button>
+        <button
+          class="btn-status status-btn-notice"
+          [disabled]="unit.occupancyStatus === 'NOTICE_PERIOD'"
+          (click)="changeStatus(unit, 'NOTICE_PERIOD')"
+        >
+          Notice Period
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

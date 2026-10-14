@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: scos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: scos_db
+      POSTGRES_USER: scos_app_user
+      POSTGRES_PASSWORD: scos_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scos_app_user -d scos_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - scos-network
+
+  # 2. SCOS Backend (Spring Boot 3.3.4, Java 21)
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: scos-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/scos_db
+      SPRING_DATASOURCE_USERNAME: scos_app_user
+      SPRING_DATASOURCE_PASSWORD: scos_secure_password
+      SCOS_JWT_SECRET: c2Nvc19zdXBlcl9zZWN1cmVfZW50ZXJwcmlzZV9qd3Rfc2VjcmV0X2tleV8yMDI2X2FwYXJ0bWVudF9tYW5hZ2VtZW50X3N5c3RlbQ==
+      SCOS_JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - scos-network
+
+  # 3. SCOS Frontend (Angular 18+ on Nginx)
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: scos-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - scos-network
+
+  # 4. Optional pgAdmin Web Console for DB inspection
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: scos-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@scos.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - scos-network
+
+networks:
+  scos-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

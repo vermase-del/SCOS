@@ -1,0 +1,41 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Maven / Java build artifacts
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+**/*.nar
+**/*.log
+
+# Local embedded database files
+**/data/
+**/*.db
+**/*.mv.db
+**/*.trace.db
+
+# Node.js and Angular
+**/node_modules/
+**/dist/
+**/.angular/
+**/.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+**/.env
+**/.env.local

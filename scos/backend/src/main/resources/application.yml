@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: scos-core-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# JWT Token Configuration
+scos:
+  jwt:
+    secret: c2Nvc19zdXBlcl9zZWN1cmVfZW50ZXJwcmlzZV9qd3Rfc2VjcmV0X2tleV8yMDI2X2FwYXJ0bWVudF9tYW5hZ2VtZW50X3N5c3RlbQ==
+    expiration-ms: 86400000 # 24 hours
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
