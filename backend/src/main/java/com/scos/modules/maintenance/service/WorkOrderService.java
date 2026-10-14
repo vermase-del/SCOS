@@ -106,6 +106,14 @@ public class WorkOrderService {
     public WorkOrderDto transitionStatus(UUID id, UUID communityId, TransitionStatusRequest req, String username) {
         UserEntity actor=requireUser(username); String role=roleFor(actor.getId(),communityId);
         WorkOrderEntity wo=findScoped(id,communityId); WorkOrderStatus before=wo.getStatus();
+        if(req.targetStatus()==WorkOrderStatus.CANCELLED
+            && !actor.getId().equals(wo.getReportedByUserId())
+            && !Set.of("SUPER_ADMIN","COMMUNITY_MANAGER").contains(role))
+            throw new SecurityException("Only the reporter or community management can cancel a work order");
+        if(Set.of(WorkOrderStatus.IN_PROGRESS,WorkOrderStatus.ON_HOLD,WorkOrderStatus.RESOLVED).contains(req.targetStatus())
+            && "TECHNICIAN".equals(role)
+            && !actor.getId().equals(wo.getAssignedTechnicianId()))
+            throw new SecurityException("Only the assigned technician can update this work order");
         stateMachine.validateTransition(before,req.targetStatus(),role,req.notes());
         Instant now=Instant.now();
         if(req.targetStatus()==WorkOrderStatus.ON_HOLD) { wo.setHoldReason(req.notes().trim()); sla.pauseSla(wo,now); }
