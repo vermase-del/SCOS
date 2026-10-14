@@ -27,7 +27,7 @@
 ### Task 1: Database Migration & Schema Creation
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/resources/db/migration/V5__init_work_orders_and_maintenance_desk.sql`
+- Create: `backend/src/main/resources/db/migration/V5__init_work_orders_and_maintenance_desk.sql`
 
 **Interfaces:**
 - Consumes: `scos_communities(id)`, `scos_buildings(id)`, `scos_units(id)`, `scos_users(id)`
@@ -149,18 +149,18 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 2: Domain Entities & Enums
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderScope.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderCategory.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderPriority.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderStatus.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/CostType.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/ActivityType.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderSequenceEntity.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderEntity.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderActivityEntity.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderAssignmentEntity.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderCostLineEntity.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderFeedbackEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderScope.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderCategory.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderPriority.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderStatus.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/CostType.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/ActivityType.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderSequenceEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderActivityEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderAssignmentEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderCostLineEntity.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/entity/WorkOrderFeedbackEntity.java`
 
 - [ ] **Step 1: Create Enums**
   - `WorkOrderScope`: `PRIVATE_UNIT`, `COMMON_AREA`
@@ -189,13 +189,13 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 3: Concurrency-Safe Sequence Counter & Repositories
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderRepository.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderSequenceRepository.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderActivityRepository.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderCostLineRepository.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderFeedbackRepository.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderSequenceService.java`
-- Test: `d:/HMSREFERENCE/scos/backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderSequenceServiceTest.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderRepository.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderSequenceRepository.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderActivityRepository.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderCostLineRepository.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/repository/WorkOrderFeedbackRepository.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderSequenceService.java`
+- Test: `backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderSequenceServiceTest.java`
 
 **Interfaces:**
 - Produces: `WorkOrderSequenceService.generateTicketNumber(UUID communityId): String` -> Format: `WO-YYYY-0001`
@@ -222,10 +222,10 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 4: Authoritative SLA Calculation Engine & State Machine
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/service/SlaEngineService.java`
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderStateMachine.java`
-- Test: `d:/HMSREFERENCE/scos/backend/src/test/java/com/scos/modules/maintenance/service/SlaEngineServiceTest.java`
-- Test: `d:/HMSREFERENCE/scos/backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderStateMachineTest.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/service/SlaEngineService.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderStateMachine.java`
+- Test: `backend/src/test/java/com/scos/modules/maintenance/service/SlaEngineServiceTest.java`
+- Test: `backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderStateMachineTest.java`
 
 **Interfaces:**
 - Produces:
@@ -270,19 +270,19 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 
 **Files:**
 - Create DTOs:
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/CreateWorkOrderRequest.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/AssignTechnicianRequest.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/TransitionStatusRequest.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/AddCostLineRequest.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/SubmitFeedbackRequest.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderDto.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderSummaryDto.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderActivityDto.java`
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderCostLineDto.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/CreateWorkOrderRequest.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/AssignTechnicianRequest.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/TransitionStatusRequest.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/AddCostLineRequest.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/SubmitFeedbackRequest.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderDto.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderSummaryDto.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderActivityDto.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/dto/WorkOrderCostLineDto.java`
 - Create Service:
-  - `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderService.java`
+  - `backend/src/main/java/com/scos/modules/maintenance/service/WorkOrderService.java`
 - Test:
-  - `d:/HMSREFERENCE/scos/backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderServiceTest.java`
+  - `backend/src/test/java/com/scos/modules/maintenance/service/WorkOrderServiceTest.java`
 
 **Interfaces:**
 - Produces:
@@ -317,8 +317,8 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 6: REST Controller & Security Integration
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/modules/maintenance/controller/WorkOrderController.java`
-- Test: `d:/HMSREFERENCE/scos/backend/src/test/java/com/scos/modules/maintenance/controller/WorkOrderControllerTest.java`
+- Create: `backend/src/main/java/com/scos/modules/maintenance/controller/WorkOrderController.java`
+- Test: `backend/src/test/java/com/scos/modules/maintenance/controller/WorkOrderControllerTest.java`
 
 **Endpoints:**
 - `POST /api/v1/work-orders` (`@PreAuthorize("hasAuthority('SCREEN:WORK_ORDERS')")`)
@@ -353,7 +353,7 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 7: DataInitializer Seed Data for Live Testing
 
 **Files:**
-- Modify: `d:/HMSREFERENCE/scos/backend/src/main/java/com/scos/config/DataInitializer.java`
+- Modify: `backend/src/main/java/com/scos/config/DataInitializer.java`
 
 - [ ] **Step 1: Update `DataInitializer.java`**
   - Add seeding for sample work orders in various operational states (`OPEN`, `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`) with initial cost lines and activity timelines.
@@ -374,8 +374,8 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 8: Angular Frontend Services & Models
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/frontend/src/app/features/work-orders/work-order.model.ts`
-- Create: `d:/HMSREFERENCE/scos/frontend/src/app/features/work-orders/work-order.service.ts`
+- Create: `frontend/src/app/features/work-orders/work-order.model.ts`
+- Create: `frontend/src/app/features/work-orders/work-order.service.ts`
 
 - [ ] **Step 1: Create TypeScript Models (`work-order.model.ts`)**
   - Define `WorkOrder`, `WorkOrderSummary`, `WorkOrderActivity`, `WorkOrderCostLine`, `CreateWorkOrderRequest`, `AssignTechnicianRequest`, `TransitionStatusRequest`, `AddCostLineRequest`, `SubmitFeedbackRequest`.
@@ -398,9 +398,9 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 9: Angular Frontend Operations Console (Kanban + Table + Workbench)
 
 **Files:**
-- Create: `d:/HMSREFERENCE/scos/frontend/src/app/features/work-orders/work-order-list.component.ts`
-- Create: `d:/HMSREFERENCE/scos/frontend/src/app/features/work-orders/work-order-workbench-drawer.component.ts`
-- Create: `d:/HMSREFERENCE/scos/frontend/src/app/features/work-orders/create-work-order-modal.component.ts`
+- Create: `frontend/src/app/features/work-orders/work-order-list.component.ts`
+- Create: `frontend/src/app/features/work-orders/work-order-workbench-drawer.component.ts`
+- Create: `frontend/src/app/features/work-orders/create-work-order-modal.component.ts`
 
 - [ ] **Step 1: Implement `WorkOrderListComponent`**
   - KPI Tiles: Active Work Orders, Open Queue, In Progress, SLA Overdue, Resident Satisfaction Rating.
@@ -435,8 +435,8 @@ git commit -m "feat(maintenance): add V5 database migration for work orders and 
 ### Task 10: Routing, Sidebar & Security Guards Integration
 
 **Files:**
-- Modify: `d:/HMSREFERENCE/scos/frontend/src/app/core/layout/sidebar.component.ts`
-- Modify: `d:/HMSREFERENCE/scos/frontend/src/app/app.routes.ts`
+- Modify: `frontend/src/app/core/layout/sidebar.component.ts`
+- Modify: `frontend/src/app/app.routes.ts`
 
 - [ ] **Step 1: Update `sidebar.component.ts`**
   - Add `Work Orders & Maintenance Desk` navigation item under `CORE OPERATIONS` with icon `🛠️`, guarded by `authService.hasPermission('SCREEN:WORK_ORDERS')`.
