@@ -51,7 +51,7 @@ public class WorkOrderService {
         wo.setId(UUID.randomUUID()); wo.setCommunityId(communityId); wo.setTicketNumber(sequences.generateTicketNumber(communityId));
         wo.setTitle(req.title().trim()); wo.setDescription(req.description().trim()); wo.setScope(req.scope());
         wo.setBuildingId(req.buildingId()); wo.setUnitId(req.unitId()); wo.setLocationDetails(req.locationDetails());
-        wo.setCategory(req.category()); wo.setPriority(req.priority()); wo.setStatus(WorkOrderStatus.OPEN());
+        wo.setCategory(req.category()); wo.setPriority(req.priority()); wo.setStatus(WorkOrderStatus.OPEN);
         wo.setReportedByUserId(actor.getId()); wo.setSlaDueAt(sla.calculateTargetDueAt(req.priority(),now));
         wo.setCreatedBy(username); wo.setUpdatedBy(username); wo.setCreatedAt(now); wo.setUpdatedAt(now);
         wo=workOrders.save(wo);
