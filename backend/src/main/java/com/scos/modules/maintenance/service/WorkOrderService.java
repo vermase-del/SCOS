@@ -161,7 +161,9 @@ public class WorkOrderService {
         long inProgress=workOrders.countByCommunityIdAndStatus(communityId,WorkOrderStatus.IN_PROGRESS);
         long onHold=workOrders.countByCommunityIdAndStatus(communityId,WorkOrderStatus.ON_HOLD);
         long resolved=workOrders.countByCommunityIdAndStatus(communityId,WorkOrderStatus.RESOLVED);
-        long breached=workOrders.countByCommunityIdAndSlaBreachedTrueAndStatusNotIn(communityId,List.of(WorkOrderStatus.CLOSED,WorkOrderStatus.CANCELLED));
+        long persistedBreaches=workOrders.countByCommunityIdAndSlaBreachedTrueAndStatusNotIn(communityId,List.of(WorkOrderStatus.CLOSED,WorkOrderStatus.CANCELLED));
+        long currentlyOverdue=workOrders.countByCommunityIdAndSlaDueAtBeforeAndStatusNotIn(communityId,Instant.now(),List.of(WorkOrderStatus.CLOSED,WorkOrderStatus.CANCELLED));
+        long breached=Math.max(persistedBreaches,currentlyOverdue);
         double avg=feedback.averageRatingForCommunity(communityId).orElse(0.0);
         return new WorkOrderSummaryDto(active,open,assigned,inProgress,onHold,resolved,breached,avg);
     }
