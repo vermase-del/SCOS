@@ -60,6 +60,6 @@ public class AssetEntity {
     public String getCreatedBy(){return createdBy;} public void setCreatedBy(String v){createdBy=v;}
     public Instant getCreatedAt(){return createdAt;} public void setCreatedAt(Instant v){createdAt=v;}
     public String getUpdatedBy(){return updatedBy;} public void setUpdatedBy(String v){updatedBy=v;}
-    public Instant getUpdatedAt(){return updatedAt;} public void setUpdatedAt( v){updatedAt=v;}
+    public Instant getUpdatedAt(){return updatedAt;} public void setUpdatedAt(Instant v){updatedAt=v;}
     public long getVersion(){return version;} public void setVersion(long v){version=v;}
 }
