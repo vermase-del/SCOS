@@ -56,7 +56,7 @@ public class WorkOrderController {
     }
 
     @PatchMapping("/{id}/assign")
-    @PreAuthorize("hasAuthority('WORKORDER:WRITE') or hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER')")
     @Operation(summary="Assign or reassign a technician")
     public ApiResponse<WorkOrderDto> assign(@PathVariable UUID id,@RequestParam UUID communityId,
         @Valid @RequestBody AssignTechnicianRequest request,Principal principal) {
@@ -73,7 +73,7 @@ public class WorkOrderController {
 
     @PostMapping("/{id}/costs")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('WORKORDER:WRITE') or hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasRole('TECHNICIAN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasRole('TECHNICIAN')")
     @Operation(summary="Record an itemized cost line")
     public ApiResponse<WorkOrderCostLineDto> addCost(@PathVariable UUID id,@RequestParam UUID communityId,
         @Valid @RequestBody AddCostLineRequest request,Principal principal) {
