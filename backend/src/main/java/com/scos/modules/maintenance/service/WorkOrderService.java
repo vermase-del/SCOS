@@ -8,6 +8,7 @@ import com.scos.modules.user.entity.UserEntity;
 import com.scos.modules.user.repository.UserCommunityAccessRepository;
 import com.scos.modules.user.repository.UserRepository;
 import org.springframework.data.domain.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +29,16 @@ public class WorkOrderService {
     private final UserCommunityAccessRepository communityAccess;
     private final SlaEngineService sla;
     private final WorkOrderStateMachine stateMachine;
+    private final JdbcTemplate jdbcTemplate;
 
     public WorkOrderService(WorkOrderRepository workOrders, WorkOrderSequenceService sequences,
             WorkOrderActivityRepository activities, WorkOrderAssignmentRepository assignments,
             WorkOrderCostLineRepository costs, WorkOrderFeedbackRepository feedback,
             UserRepository users, UserCommunityAccessRepository communityAccess,
-            SlaEngineService sla, WorkOrderStateMachine stateMachine) {
+            SlaEngineService sla, WorkOrderStateMachine stateMachine, JdbcTemplate jdbcTemplate) {
         this.workOrders=workOrders; this.sequences=sequences; this.activities=activities;
         this.assignments=assignments; this.costs=costs; this.feedback=feedback;
-        this.users=users; this.communityAccess=communityAccess; this.sla=sla; this.stateMachine=stateMachine;
+        this.users=users; this.communityAccess=communityAccess; this.sla=sla; this.stateMachine=stateMachine; this.jdbcTemplate=jdbcTemplate;
     }
 
     @Transactional
@@ -46,6 +48,9 @@ public class WorkOrderService {
         requireCommunityMember(actor.getId(),communityId);
         if(req.scope()==WorkOrderScope.PRIVATE_UNIT && req.unitId()==null)
             throw new IllegalArgumentException("unitId is required for PRIVATE_UNIT work orders");
+        if(req.scope()==WorkOrderScope.COMMON_AREA && req.unitId()!=null)
+            throw new IllegalArgumentException("unitId must be empty for COMMON_AREA work orders");
+        validateLocationOwnership(req.buildingId(),req.unitId(),communityId);
         Instant now=Instant.now();
         WorkOrderEntity wo=new WorkOrderEntity();
         wo.setId(UUID.randomUUID()); wo.setCommunityId(communityId); wo.setTicketNumber(sequences.generateTicketNumber(communityId));
@@ -166,6 +171,27 @@ public class WorkOrderService {
         long breached=Math.max(persistedBreaches,currentlyOverdue);
         double avg=feedback.averageRatingForCommunity(communityId).orElse(0.0);
         return new WorkOrderSummaryDto(active,open,assigned,inProgress,onHold,resolved,breached,avg);
+    }
+
+    private void validateLocationOwnership(UUID buildingId, UUID unitId, UUID communityId) {
+        if (buildingId != null) {
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM scos_buildings WHERE id = ? AND community_id = ?",
+                Integer.class, buildingId, communityId);
+            if (count == null || count == 0) throw new SecurityException("Building does not belong to the selected community");
+        }
+        if (unitId != null) {
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM scos_units WHERE id = ? AND community_id = ?",
+                Integer.class, unitId, communityId);
+            if (count == null || count == 0) throw new SecurityException("Unit does not belong to the selected community");
+            if (buildingId != null) {
+                Integer match = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM scos_units WHERE id = ? AND community_id = ? AND building_id = ?",
+                    Integer.class, unitId, communityId, buildingId);
+                if (match == null || match == 0) throw new IllegalArgumentException("Unit does not belong to the selected building");
+            }
+        }
     }
 
     private WorkOrderEntity findScoped(UUID id,UUID communityId) {
