@@ -25,6 +25,7 @@ public class WorkOrderService {
     private final WorkOrderAssignmentRepository assignments;
     private final WorkOrderCostLineRepository costs;
     private final WorkOrderFeedbackRepository feedback;
+    private final WorkOrderSlaHistoryRepository slaHistory;
     private final UserRepository users;
     private final UserCommunityAccessRepository communityAccess;
     private final SlaEngineService sla;
@@ -33,11 +34,11 @@ public class WorkOrderService {
 
     public WorkOrderService(WorkOrderRepository workOrders, WorkOrderSequenceService sequences,
             WorkOrderActivityRepository activities, WorkOrderAssignmentRepository assignments,
-            WorkOrderCostLineRepository costs, WorkOrderFeedbackRepository feedback,
+            WorkOrderCostLineRepository costs, WorkOrderFeedbackRepository feedback, WorkOrderSlaHistoryRepository slaHistory,
             UserRepository users, UserCommunityAccessRepository communityAccess,
             SlaEngineService sla, WorkOrderStateMachine stateMachine, JdbcTemplate jdbcTemplate) {
         this.workOrders=workOrders; this.sequences=sequences; this.activities=activities;
-        this.assignments=assignments; this.costs=costs; this.feedback=feedback;
+        this.assignments=assignments; this.costs=costs; this.feedback=feedback; this.slaHistory=slaHistory;
         this.users=users; this.communityAccess=communityAccess; this.sla=sla; this.stateMachine=stateMachine; this.jdbcTemplate=jdbcTemplate;
     }
 
@@ -116,8 +117,18 @@ public class WorkOrderService {
             throw new SecurityException("Only the assigned technician can update this work order");
         stateMachine.validateTransition(before,req.targetStatus(),role,req.notes());
         Instant now=Instant.now();
-        if(req.targetStatus()==WorkOrderStatus.ON_HOLD) { wo.setHoldReason(req.notes().trim()); sla.pauseSla(wo,now); }
-        if(before==WorkOrderStatus.ON_HOLD && req.targetStatus()==WorkOrderStatus.IN_PROGRESS) sla.resumeSla(wo,now);
+        Instant originalDueAt=wo.getSlaDueAt();
+        if(req.targetStatus()==WorkOrderStatus.ON_HOLD) {
+            wo.setHoldReason(req.notes().trim()); sla.pauseSla(wo,now);
+            recordSlaHistory(wo.getId(),"HOLD",originalDueAt,originalDueAt,null,req.notes());
+        }
+        if(before==WorkOrderStatus.ON_HOLD && req.targetStatus()==WorkOrderStatus.IN_PROGRESS) {
+            Instant holdStartedAt=wo.getHoldStartedAt();
+            String holdReason=wo.getHoldReason();
+            long holdSeconds=Math.max(0,java.time.Duration.between(holdStartedAt,now).getSeconds());
+            sla.resumeSla(wo,now);
+            recordSlaHistory(wo.getId(),"RESUME",originalDueAt,wo.getSlaDueAt(),holdSeconds,holdReason);
+        }
         wo.setStatus(req.targetStatus()); wo.setUpdatedBy(username);
         if(req.targetStatus()==WorkOrderStatus.RESOLVED) wo.setSlaBreached(sla.isBreached(wo,now));
         WorkOrderEntity saved=workOrders.save(wo);
@@ -216,6 +227,13 @@ public class WorkOrderService {
         return communityAccess.findByUserIdAndCommunityId(userId,communityId).stream().filter(a->"ACTIVE".equals(a.getStatus()))
             .map(UserCommunityAccessEntity::getRole).filter(Objects::nonNull).map(r->r.getCode()).findFirst()
             .orElseThrow(()->new SecurityException("No active role for this community"));
+    }
+    private void recordSlaHistory(UUID workOrderId,String eventType,Instant originalDueAt,Instant newDueAt,Long holdDurationSeconds,String reason) {
+        WorkOrderSlaHistoryEntity entry=new WorkOrderSlaHistoryEntity();
+        entry.setWorkOrderId(workOrderId); entry.setEventType(eventType);
+        entry.setOriginalDueAt(originalDueAt); entry.setNewDueAt(newDueAt);
+        entry.setHoldDurationSeconds(holdDurationSeconds); entry.setReason(reason);
+        slaHistory.save(entry);
     }
     private void addActivity(WorkOrderEntity wo,UUID author,ActivityType type,WorkOrderStatus from,WorkOrderStatus to,String notes) {
         WorkOrderActivityEntity a=new WorkOrderActivityEntity(); a.setWorkOrderId(wo.getId()); a.setAuthorUserId(author); a.setActivityType(type);
