@@ -8,7 +8,10 @@ import java.util.UUID;
 @Entity
 @Table(name = "scos_work_orders", uniqueConstraints = @UniqueConstraint(name = "uq_wo_community_ticket", columnNames = {"community_id", "ticket_number"}), indexes = {
     @Index(name = "idx_wo_community_status", columnList = "community_id,status"),
-    @Index(name = "idx_wo_sla_due", columnList = "community_id,sla_due_at,sla_breached")
+    @Index(name = "idx_wo_sla_due", columnList = "community_id,sla_due_at,sla_breached"),
+    @Index(name = "idx_wo_asset_status", columnList = "community_id,asset_id,status"),
+    @Index(name = "idx_wo_planned_window", columnList = "community_id,planned_start_at,planned_end_at"),
+    @Index(name = "idx_wo_type_status", columnList = "community_id,work_order_type,status")
 })
 public class WorkOrderEntity {
     @Id @Column(nullable=false, updatable=false) private UUID id;
@@ -39,8 +42,53 @@ public class WorkOrderEntity {
     @Column(name="updated_by", nullable=false, length=60) private String updatedBy;
     @Column(name="updated_at", nullable=false) private Instant updatedAt;
 
-    @PrePersist void onCreate() { Instant now=Instant.now(); if(id==null) id=UUID.randomUUID(); if(createdAt==null) createdAt=now; if(updatedAt==null) updatedAt=now; if(createdBy==null) createdBy="system"; if(updatedBy==null) updatedBy=createdBy; if(totalCost==null) totalCost=BigDecimal.ZERO; }
-    @PreUpdate void onUpdate() { updatedAt=Instant.now(); }
+    // V6 Work order planning and asset operations additions
+    @Enumerated(EnumType.STRING)
+    @Column(name="work_order_type", nullable=false, length=30)
+    private WorkOrderType workOrderType = WorkOrderType.REACTIVE;
+
+    @Column(name="reason_code", length=40)
+    private String reasonCode;
+
+    @Column(name="department_code", length=50)
+    private String departmentCode;
+
+    @Column(name="planned_start_at")
+    private Instant plannedStartAt;
+
+    @Column(name="planned_end_at")
+    private Instant plannedEndAt;
+
+    @Column(name="actual_start_at")
+    private Instant actualStartAt;
+
+    @Column(name="resolved_at")
+    private Instant resolvedAt;
+
+    @Column(name="out_of_service", nullable=false)
+    private boolean outOfService = false;
+
+    @Column(name="service_type", length=40)
+    private String serviceType;
+
+    @Column(name="asset_id")
+    private UUID assetId;
+
+    @Column(name="external_reference", length=120)
+    private String externalReference;
+
+    @PrePersist void onCreate() {
+        Instant now = Instant.now();
+        if (id == null) id = UUID.randomUUID();
+        if (createdAt == null) createdAt = now;
+        if (updatedAt == null) updatedAt = now;
+        if (createdBy == null) createdBy = "system";
+        if (updatedBy == null) updatedBy = createdBy;
+        if (totalCost == null) totalCost = BigDecimal.ZERO;
+        if (workOrderType == null) workOrderType = WorkOrderType.REACTIVE;
+    }
+    @PreUpdate void onUpdate() { updatedAt = Instant.now(); }
+
     public UUID getId(){return id;} public void setId(UUID v){id=v;}
     public UUID getCommunityId(){return communityId;} public void setCommunityId(UUID v){communityId=v;}
     public String getTicketNumber(){return ticketNumber;} public void setTicketNumber(String v){ticketNumber=v;}
@@ -68,4 +116,16 @@ public class WorkOrderEntity {
     public Instant getCreatedAt(){return createdAt;} public void setCreatedAt(Instant v){createdAt=v;}
     public String getUpdatedBy(){return updatedBy;} public void setUpdatedBy(String v){updatedBy=v;}
     public Instant getUpdatedAt(){return updatedAt;} public void setUpdatedAt(Instant v){updatedAt=v;}
+
+    public WorkOrderType getWorkOrderType(){return workOrderType;} public void setWorkOrderType(WorkOrderType v){workOrderType=v;}
+    public String getReasonCode(){return reasonCode;} public void setReasonCode(String v){reasonCode=v;}
+    public String getDepartmentCode(){return departmentCode;} public void setDepartmentCode(String v){departmentCode=v;}
+    public Instant getPlannedStartAt(){return plannedStartAt;} public void setPlannedStartAt(Instant v){plannedStartAt=v;}
+    public Instant getPlannedEndAt(){return plannedEndAt;} public void setPlannedEndAt(Instant v){plannedEndAt=v;}
+    public Instant getActualStartAt(){return actualStartAt;} public void setActualStartAt(Instant v){actualStartAt=v;}
+    public Instant getResolvedAt(){return resolvedAt;} public void setResolvedAt(Instant v){resolvedAt=v;}
+    public boolean isOutOfService(){return outOfService;} public void setOutOfService(boolean v){outOfService=v;}
+    public String getServiceType(){return serviceType;} public void setServiceType(String v){serviceType=v;}
+    public UUID getAssetId(){return assetId;} public void setAssetId(UUID v){assetId=v;}
+    public String getExternalReference(){return externalReference;} public void setExternalReference(String v){externalReference=v;}
 }

@@ -39,6 +39,12 @@ export const routes: Routes = [
         data: { permission: 'SCREEN:WORK_ORDERS' }
       },
       {
+        path: 'assets',
+        loadComponent: () => import('./features/assets/asset-list.component').then(m => m.AssetListComponent),
+        canActivate: [authGuard],
+        data: { permission: 'SCREEN:WORK_ORDERS' }
+      },
+      {
         path: 'users',
         loadComponent: () => import('./features/users/user-list.component').then(m => m.UserListComponent),
         canActivate: [authGuard],
