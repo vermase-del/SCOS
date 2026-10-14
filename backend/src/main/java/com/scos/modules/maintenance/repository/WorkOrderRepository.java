@@ -5,6 +5,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrderEntity, UUID
  Page<WorkOrderEntity> findByCommunityIdAndStatusOrderByCreatedAtDesc(UUID communityId, WorkOrderStatus status, Pageable pageable);
  Page<WorkOrderEntity> findByCommunityIdAndPriorityOrderByCreatedAtDesc(UUID communityId, WorkOrderPriority priority, Pageable pageable);
  Optional<WorkOrderEntity> findByIdAndCommunityId(UUID id, UUID communityId);
+ Page<WorkOrderEntity> findByCommunityIdAndStatusAndPriorityOrderByCreatedAtDesc(UUID communityId, WorkOrderStatus status, WorkOrderPriority priority, Pageable pageable);
  long countByCommunityIdAndStatusIn(UUID communityId, Collection<WorkOrderStatus> statuses);
  long countByCommunityIdAndStatus(UUID communityId, WorkOrderStatus status);
  long countByCommunityIdAndSlaBreachedTrueAndStatusNotIn(UUID communityId, Collection<WorkOrderStatus> statuses);
