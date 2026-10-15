@@ -45,6 +45,12 @@ export const routes: Routes = [
         data: { permission: 'SCREEN:WORK_ORDERS' }
       },
       {
+        path: 'facilities',
+        loadComponent: () => import('./features/facilities/facility-list.component').then(m => m.FacilityListComponent),
+        canActivate: [authGuard],
+        data: { permission: 'SCREEN:FACILITY_BOOKINGS' }
+      },
+      {
         path: 'users',
         loadComponent: () => import('./features/users/user-list.component').then(m => m.UserListComponent),
         canActivate: [authGuard],

@@ -6,6 +6,8 @@ import com.scos.modules.community.entity.UnitEntity;
 import com.scos.modules.community.repository.BuildingRepository;
 import com.scos.modules.community.repository.CommunityRepository;
 import com.scos.modules.community.repository.UnitRepository;
+import com.scos.modules.facility.entity.*;
+import com.scos.modules.facility.repository.*;
 import com.scos.modules.maintenance.entity.*;
 import com.scos.modules.maintenance.repository.*;
 import com.scos.modules.user.entity.PermissionEntity;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,6 +52,8 @@ public class DataInitializer implements CommandLineRunner {
     private final WorkOrderActivityRepository activityRepository;
     private final WorkOrderCostLineRepository costLineRepository;
     private final WorkOrderFeedbackRepository feedbackRepository;
+    private final FacilityRepository facilityRepository;
+    private final FacilityBookingRepository facilityBookingRepository;
 
     public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
             PermissionRepository permissionRepository, UserCommunityAccessRepository accessRepository,
@@ -57,7 +62,9 @@ public class DataInitializer implements CommandLineRunner {
             AssetRepository assetRepository, AssetStatusHistoryRepository assetStatusHistoryRepository,
             WorkOrderRepository workOrderRepository, WorkOrderSequenceRepository sequenceRepository,
             WorkOrderActivityRepository activityRepository, WorkOrderCostLineRepository costLineRepository,
-            WorkOrderFeedbackRepository feedbackRepository) {
+            WorkOrderFeedbackRepository feedbackRepository,
+            FacilityRepository facilityRepository,
+            FacilityBookingRepository facilityBookingRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
@@ -73,6 +80,8 @@ public class DataInitializer implements CommandLineRunner {
         this.activityRepository = activityRepository;
         this.costLineRepository = costLineRepository;
         this.feedbackRepository = feedbackRepository;
+        this.facilityRepository = facilityRepository;
+        this.facilityBookingRepository = facilityBookingRepository;
     }
 
     @Override
@@ -96,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         seedOperationalMaintenanceData();
+        seedFacilitiesAndBookings();
     }
 
     private void seedPermissionsAndRbac() {
@@ -108,6 +118,7 @@ public class DataInitializer implements CommandLineRunner {
                 new PermissionEntity(null, "SCREEN:COMMUNITY_REGISTER", "SCREEN", "Register and onboard new housing societies"),
                 new PermissionEntity(null, "SCREEN:GATE_SECURITY", "SCREEN", "Gatehouse Security & Visitor Terminal"),
                 new PermissionEntity(null, "SCREEN:WORK_ORDERS", "SCREEN", "Maintenance & Facility Work Order Desk"),
+                new PermissionEntity(null, "SCREEN:FACILITY_BOOKINGS", "SCREEN", "Community Facilities, Amenities & Slot Reservations"),
                 new PermissionEntity(null, "WORKORDER:READ", "OPERATION", "View work orders and maintenance records"),
                 new PermissionEntity(null, "WORKORDER:WRITE", "OPERATION", "Create and update work orders"),
                 new PermissionEntity(null, "ASSET:READ", "OPERATION", "View asset register and equipment records"),
@@ -130,21 +141,21 @@ public class DataInitializer implements CommandLineRunner {
 
         roleRepository.findByCode("HOA_OFFICER").ifPresent(role -> {
             Set<PermissionEntity> set = new HashSet<>();
-            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:USER_DIRECTORY", "SCREEN:WORK_ORDERS", "WORKORDER:READ", "ASSET:READ");
+            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:USER_DIRECTORY", "SCREEN:WORK_ORDERS", "SCREEN:FACILITY_BOOKINGS", "WORKORDER:READ", "ASSET:READ");
             role.setPermissions(set);
             roleRepository.save(role);
         });
 
         roleRepository.findByCode("OWNER").ifPresent(role -> {
             Set<PermissionEntity> set = new HashSet<>();
-            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:WORK_ORDERS", "WORKORDER:READ", "WORKORDER:WRITE");
+            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:WORK_ORDERS", "SCREEN:FACILITY_BOOKINGS", "WORKORDER:READ", "WORKORDER:WRITE");
             role.setPermissions(set);
             roleRepository.save(role);
         });
 
         roleRepository.findByCode("TENANT").ifPresent(role -> {
             Set<PermissionEntity> set = new HashSet<>();
-            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:WORK_ORDERS", "WORKORDER:READ", "WORKORDER:WRITE");
+            addIfPresent(set, permMap, "SCREEN:DASHBOARD", "SCREEN:BUILDING_MATRIX", "SCREEN:WORK_ORDERS", "SCREEN:FACILITY_BOOKINGS", "WORKORDER:READ", "WORKORDER:WRITE");
             role.setPermissions(set);
             roleRepository.save(role);
         });
@@ -534,5 +545,174 @@ public class DataInitializer implements CommandLineRunner {
         c.setCurrencyCode("INR");
         c.setRecordedByUserId(user);
         costLineRepository.save(c);
+    }
+
+    private void seedFacilitiesAndBookings() {
+        if (facilityRepository.count() > 0) {
+            return;
+        }
+
+        log.info("Seeding community facilities and amenity catalog...");
+        CommunityEntity comm = communityRepository.findByCode("EMERALD_GRAND").orElse(null);
+        if (comm == null) return;
+        UUID communityId = comm.getId();
+
+        UserEntity admin = userRepository.findByUsername("admin").orElse(null);
+        UserEntity resident = userRepository.findByUsername("owner.sharma").orElse(admin);
+        UUID adminId = admin != null ? admin.getId() : UUID.randomUUID();
+        UUID residentId = resident != null ? resident.getId() : adminId;
+
+        // 1. Banquet Hall
+        FacilityEntity banquetHall = new FacilityEntity();
+        banquetHall.setCommunityId(communityId);
+        banquetHall.setFacilityCode("FAC-CH-01");
+        banquetHall.setName("Clubhouse Grand Banquet Hall");
+        banquetHall.setDescription("Air-conditioned banquet venue with acoustic audio system, dynamic banquet lighting, and catering staging kitchen.");
+        banquetHall.setCategory(FacilityCategory.PARTY_HALL);
+        banquetHall.setLocationDetails("Clubhouse 1st Floor, Wing A");
+        banquetHall.setCapacity(200);
+        banquetHall.setHourlyFee(new BigDecimal("2500.00"));
+        banquetHall.setSecurityDeposit(new BigDecimal("10000.00"));
+        banquetHall.setCurrencyCode("INR");
+        banquetHall.setOperatingHoursStart(LocalTime.of(9, 0));
+        banquetHall.setOperatingHoursEnd(LocalTime.of(23, 0));
+        banquetHall.setMinBookingHours(3);
+        banquetHall.setMaxBookingHours(8);
+        banquetHall.setCancellationCutoffHours(24);
+        banquetHall.setRequiresApproval(true);
+        banquetHall.setRulesAndRegulations("Music allowed until 10:00 PM per society bylaws. No open fire cooking inside hall. Cleanup deposit refunded within 48h after post-event inspection.");
+        banquetHall.setIsActive(true);
+        banquetHall = facilityRepository.save(banquetHall);
+
+        // 2. Swimming Pool
+        FacilityEntity pool = new FacilityEntity();
+        pool.setCommunityId(communityId);
+        pool.setFacilityCode("FAC-POOL-01");
+        pool.setName("Olympic Temperature-Controlled Pool");
+        pool.setDescription("50-meter 8-lane heated swimming pool with ozone filtration and certified lifeguard on duty.");
+        pool.setCategory(FacilityCategory.SWIMMING_POOL);
+        pool.setLocationDetails("Sports Complex Ground Level");
+        pool.setCapacity(40);
+        pool.setHourlyFee(new BigDecimal("150.00"));
+        pool.setSecurityDeposit(new BigDecimal("500.00"));
+        pool.setCurrencyCode("INR");
+        pool.setOperatingHoursStart(LocalTime.of(6, 0));
+        pool.setOperatingHoursEnd(LocalTime.of(21, 0));
+        pool.setMinBookingHours(1);
+        pool.setMaxBookingHours(2);
+        pool.setCancellationCutoffHours(2);
+        pool.setRequiresApproval(false);
+        pool.setRulesAndRegulations("Proper nylon/lycra swimwear and swimming cap mandatory. Shower before entering pool. Children under 12 require adult guardian supervision.");
+        pool.setIsActive(true);
+        pool = facilityRepository.save(pool);
+
+        // 3. Badminton Court
+        FacilityEntity badminton = new FacilityEntity();
+        badminton.setCommunityId(communityId);
+        badminton.setFacilityCode("FAC-BADM-01");
+        badminton.setName("Indoor Badminton Court A");
+        badminton.setDescription("Synthetic BWF-approved flooring with professional shadow-less LED lighting.");
+        badminton.setCategory(FacilityCategory.SPORTS_COURT);
+        badminton.setLocationDetails("Sports Complex 2nd Floor");
+        badminton.setCapacity(6);
+        badminton.setHourlyFee(new BigDecimal("300.00"));
+        badminton.setSecurityDeposit(BigDecimal.ZERO);
+        badminton.setCurrencyCode("INR");
+        badminton.setOperatingHoursStart(LocalTime.of(6, 0));
+        badminton.setOperatingHoursEnd(LocalTime.of(22, 0));
+        badminton.setMinBookingHours(1);
+        badminton.setMaxBookingHours(2);
+        badminton.setCancellationCutoffHours(4);
+        badminton.setRequiresApproval(false);
+        badminton.setRulesAndRegulations("Non-marking gum sole shoes mandatory. Maximum 4 active players on court. Racquet hire available at sports desk.");
+        badminton.setIsActive(true);
+        badminton = facilityRepository.save(badminton);
+
+        // 4. Coworking Lounge
+        FacilityEntity coworking = new FacilityEntity();
+        coworking.setCommunityId(communityId);
+        coworking.setFacilityCode("FAC-COWORK-01");
+        coworking.setName("Skyline Executive Coworking Hub");
+        coworking.setDescription("High-speed 1 Gbps fiber internet, ergonomic Herman Miller seating, private phone booths, and barista coffee machine.");
+        coworking.setCategory(FacilityCategory.COWORKING);
+        coworking.setLocationDetails("Clubhouse 3rd Floor Penthouse");
+        coworking.setCapacity(30);
+        coworking.setHourlyFee(new BigDecimal("200.00"));
+        coworking.setSecurityDeposit(new BigDecimal("1000.00"));
+        coworking.setCurrencyCode("INR");
+        coworking.setOperatingHoursStart(LocalTime.of(7, 0));
+        coworking.setOperatingHoursEnd(LocalTime.of(23, 0));
+        coworking.setMinBookingHours(1);
+        coworking.setMaxBookingHours(8);
+        coworking.setCancellationCutoffHours(2);
+        coworking.setRequiresApproval(false);
+        coworking.setRulesAndRegulations("Maintain low voice calls or use dedicated phone booths. No loud music without headphones. Hot desk policy applies.");
+        coworking.setIsActive(true);
+        coworking = facilityRepository.save(coworking);
+
+        // Sample Bookings
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        Instant tomorrowStart = tomorrow.atTime(18, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+        Instant tomorrowEnd = tomorrow.atTime(22, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+
+        FacilityBookingEntity b1 = new FacilityBookingEntity();
+        b1.setCommunityId(communityId);
+        b1.setFacility(banquetHall);
+        b1.setBookingReference("BK-2026-0001");
+        b1.setResidentUserId(residentId);
+        b1.setBookingDate(tomorrow);
+        b1.setStartTime(tomorrowStart);
+        b1.setEndTime(tomorrowEnd);
+        b1.setAttendeesCount(80);
+        b1.setPurpose("Resident Family Anniversary Celebration");
+        b1.setTotalFee(new BigDecimal("10000.00"));
+        b1.setDepositAmount(new BigDecimal("10000.00"));
+        b1.setCurrencyCode("INR");
+        b1.setStatus(BookingStatus.CONFIRMED);
+        b1.setApprovedByUserId(adminId);
+        b1.setApprovedAt(Instant.now());
+        facilityBookingRepository.save(b1);
+
+        LocalDate nextWeek = LocalDate.now().plusDays(5);
+        Instant nextWeekStart = nextWeek.atTime(19, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+        Instant nextWeekEnd = nextWeek.atTime(23, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+
+        FacilityBookingEntity b2 = new FacilityBookingEntity();
+        b2.setCommunityId(communityId);
+        b2.setFacility(banquetHall);
+        b2.setBookingReference("BK-2026-0002");
+        b2.setResidentUserId(residentId);
+        b2.setBookingDate(nextWeek);
+        b2.setStartTime(nextWeekStart);
+        b2.setEndTime(nextWeekEnd);
+        b2.setAttendeesCount(120);
+        b2.setPurpose("Society Cultural Evening & Musical Gala");
+        b2.setTotalFee(new BigDecimal("10000.00"));
+        b2.setDepositAmount(new BigDecimal("10000.00"));
+        b2.setCurrencyCode("INR");
+        b2.setStatus(BookingStatus.PENDING_APPROVAL);
+        facilityBookingRepository.save(b2);
+
+        LocalDate today = LocalDate.now();
+        Instant todayPoolStart = today.atTime(16, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+        Instant todayPoolEnd = today.atTime(17, 0).atZone(java.time.ZoneId.systemDefault()).toInstant();
+
+        FacilityBookingEntity b3 = new FacilityBookingEntity();
+        b3.setCommunityId(communityId);
+        b3.setFacility(pool);
+        b3.setBookingReference("BK-2026-0003");
+        b3.setResidentUserId(residentId);
+        b3.setBookingDate(today);
+        b3.setStartTime(todayPoolStart);
+        b3.setEndTime(todayPoolEnd);
+        b3.setAttendeesCount(2);
+        b3.setPurpose("Evening Fitness Swimming Session");
+        b3.setTotalFee(new BigDecimal("150.00"));
+        b3.setDepositAmount(new BigDecimal("500.00"));
+        b3.setCurrencyCode("INR");
+        b3.setStatus(BookingStatus.CONFIRMED);
+        facilityBookingRepository.save(b3);
+
+        log.info("Seeded 4 facilities and 3 bookings in EMERALD_GRAND.");
     }
 }

@@ -28,7 +28,7 @@ import { AuthService } from '../auth/auth.service';
           <span class="label">Building Floor Matrix</span>
         </a>
 
-        <div class="nav-section-title" *ngIf="authService.hasPermission('SCREEN:WORK_ORDERS')">
+        <div class="nav-section-title" *ngIf="authService.hasAnyPermission('SCREEN:WORK_ORDERS', 'SCREEN:FACILITY_BOOKINGS')">
           COMMUNITY OPERATIONS
         </div>
 
@@ -46,6 +46,14 @@ import { AuthService } from '../auth/auth.service';
            class="nav-item">
           <span class="icon">⚙️</span>
           <span class="label">Asset Register & PM</span>
+        </a>
+
+        <a *ngIf="authService.hasPermission('SCREEN:FACILITY_BOOKINGS')"
+           routerLink="/facilities"
+           routerLinkActive="active"
+           class="nav-item">
+          <span class="icon">🏊‍♂️</span>
+          <span class="label">Amenities & Bookings</span>
         </a>
 
         <div class="nav-section-title" *ngIf="authService.hasAnyPermission('SCREEN:USER_DIRECTORY', 'SCREEN:ROLE_MANAGEMENT')">
