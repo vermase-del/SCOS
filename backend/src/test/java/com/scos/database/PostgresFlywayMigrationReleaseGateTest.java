@@ -170,35 +170,35 @@ public class PostgresFlywayMigrationReleaseGateTest {
 
             // Insert Communities
             try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO scos_communities (id, name, code, domain, active) VALUES (?, ?, ?, ?, true)")) {
+                    "INSERT INTO scos_communities (id, code, name, address_line1, city, state_province, postal_code, status) VALUES (?, ?, ?, '123 Main St', 'Bengaluru', 'Karnataka', '560001', 'ACTIVE')")) {
                 ps.setObject(1, communityA);
-                ps.setString(2, "Community Alpha");
-                ps.setString(3, "COMM_ALPHA_" + UUID.randomUUID().toString().substring(0, 8));
-                ps.setString(4, "alpha.scos.local");
+                ps.setString(2, "COMM_ALPHA_" + UUID.randomUUID().toString().substring(0, 8));
+                ps.setString(3, "Community Alpha");
                 ps.executeUpdate();
 
                 ps.setObject(1, communityB);
-                ps.setString(2, "Community Beta");
-                ps.setString(3, "COMM_BETA_" + UUID.randomUUID().toString().substring(0, 8));
-                ps.setString(4, "beta.scos.local");
+                ps.setString(2, "COMM_BETA_" + UUID.randomUUID().toString().substring(0, 8));
+                ps.setString(3, "Community Beta");
                 ps.executeUpdate();
             }
 
             // Insert Users
             try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO scos_users (id, community_id, username, email, password_hash, full_name, active) VALUES (?, ?, ?, ?, 'hash', ?, true)")) {
+                    "INSERT INTO scos_users (id, username, email, phone_number, password_hash, first_name, last_name, is_active) VALUES (?, ?, ?, ?, 'hash', ?, ?, true)")) {
                 ps.setObject(1, userA);
-                ps.setObject(2, communityA);
-                ps.setString(3, "user.alpha." + UUID.randomUUID().toString().substring(0, 6));
-                ps.setString(4, "user.alpha@" + UUID.randomUUID().toString().substring(0, 6) + ".com");
-                ps.setString(5, "User Alpha");
+                ps.setString(2, "user.alpha." + UUID.randomUUID().toString().substring(0, 6));
+                ps.setString(3, "user.alpha@" + UUID.randomUUID().toString().substring(0, 6) + ".com");
+                ps.setString(4, "+9198" + UUID.randomUUID().toString().replaceAll("[^0-9]", "").substring(0, 8));
+                ps.setString(5, "User");
+                ps.setString(6, "Alpha");
                 ps.executeUpdate();
 
                 ps.setObject(1, userB);
-                ps.setObject(2, communityB);
-                ps.setString(3, "user.beta." + UUID.randomUUID().toString().substring(0, 6));
-                ps.setString(4, "user.beta@" + UUID.randomUUID().toString().substring(0, 6) + ".com");
-                ps.setString(5, "User Beta");
+                ps.setString(2, "user.beta." + UUID.randomUUID().toString().substring(0, 6));
+                ps.setString(3, "user.beta@" + UUID.randomUUID().toString().substring(0, 6) + ".com");
+                ps.setString(4, "+9197" + UUID.randomUUID().toString().replaceAll("[^0-9]", "").substring(0, 8));
+                ps.setString(5, "User");
+                ps.setString(6, "Beta");
                 ps.executeUpdate();
             }
 
