@@ -34,14 +34,12 @@ module.exports = function (config) {
     browsers: ['ChromeHeadlessCI'],
     customLaunchers: {
       ChromeHeadlessCI: {
-        base: 'Chrome',
+        base: 'ChromeHeadless',
         flags: [
-          '--headless',
           '--no-sandbox',
-          '--disable-setuid-sandbox',
           '--disable-gpu',
           '--disable-dev-shm-usage',
-          '--remote-debugging-port=9222'
+          '--disable-extensions'
         ]
       }
     },

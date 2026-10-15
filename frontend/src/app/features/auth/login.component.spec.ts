@@ -10,11 +10,10 @@ describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['login']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent, CommonModule, FormsModule],
@@ -23,6 +22,9 @@ describe('LoginComponent', () => {
         { provide: AuthService, useValue: authServiceSpy }
       ]
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
 
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
@@ -72,7 +74,7 @@ describe('LoginComponent', () => {
     component.onLogin();
 
     expect(component.loading()).toBeFalse();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
   it('should display error message on failed login', () => {
@@ -87,6 +89,6 @@ describe('LoginComponent', () => {
 
     expect(component.loading()).toBeFalse();
     expect(component.errorMessage()).toBe('Invalid username or password');
-    expect(routerSpy.navigate).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });
