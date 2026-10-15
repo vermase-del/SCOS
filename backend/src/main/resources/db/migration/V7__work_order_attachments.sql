@@ -3,8 +3,8 @@
 -- File bytes live in private object storage; PostgreSQL stores metadata only.
 -- Keep migration history additive and do not recreate V5 work-order domain tables.
 
-CREATE UNIQUE INDEX uq_scos_work_orders_community_id
-    ON scos_work_orders (community_id, id);
+ALTER TABLE scos_work_orders
+    ADD CONSTRAINT uq_scos_work_orders_community_id UNIQUE (community_id, id);
 
 CREATE TABLE scos_work_order_attachments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
