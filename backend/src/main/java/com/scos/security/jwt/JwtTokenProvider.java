@@ -34,6 +34,9 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
+        if (jwtSecret == null || jwtSecret.isBlank() || jwtSecret.trim().length() < 32) {
+            throw new IllegalStateException("SCOS JWT secret key must be explicitly configured via SCOS_JWT_SECRET environment variable (minimum 256 bits / 32 characters)");
+        }
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -114,5 +117,11 @@ public class JwtTokenProvider {
     public UUID getUserIdFromToken(String token) {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         return UUID.fromString((String) claims.get("userId"));
+    }
+
+    public UUID getCommunityIdFromToken(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        Object cid = claims.get("communityId");
+        return cid != null ? UUID.fromString(cid.toString()) : null;
     }
 }

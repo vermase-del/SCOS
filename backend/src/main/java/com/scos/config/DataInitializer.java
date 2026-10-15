@@ -34,6 +34,18 @@ public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
+    @org.springframework.beans.factory.annotation.Value("${scos.seed.sample-data:false}")
+    private boolean seedSampleData;
+
+    @org.springframework.beans.factory.annotation.Value("${scos.bootstrap.admin.username:}")
+    private String bootstrapAdminUsername;
+
+    @org.springframework.beans.factory.annotation.Value("${scos.bootstrap.admin.password:}")
+    private String bootstrapAdminPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${scos.bootstrap.admin.email:admin@scos.local}")
+    private String bootstrapAdminEmail;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
@@ -78,7 +90,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (roleRepository.count() == 0) {
-            log.info("Seeding initial SCOS roles and default data...");
+            log.info("Seeding initial SCOS roles...");
             seedRoles();
         }
 
@@ -87,15 +99,52 @@ public class DataInitializer implements CommandLineRunner {
             seedPermissionsAndRbac();
         }
 
-        if (communityRepository.count() == 0) {
-            seedCommunityAndInfrastructure();
-        }
+        if (seedSampleData) {
+            log.info("Development profile active: seeding sample community and operational demo data...");
+            if (communityRepository.count() == 0) {
+                seedCommunityAndInfrastructure();
+            }
 
-        if (userRepository.count() == 0) {
-            seedDefaultAdmin();
-        }
+            if (userRepository.count() == 0) {
+                seedDefaultAdmin();
+            }
 
-        seedOperationalMaintenanceData();
+            seedOperationalMaintenanceData();
+        } else {
+            // Production bootstrap: provision administrator only if credentials supplied via environment variables
+            if (userRepository.count() == 0) {
+                if (bootstrapAdminUsername != null && !bootstrapAdminUsername.isBlank()
+                        && bootstrapAdminPassword != null && !bootstrapAdminPassword.isBlank()) {
+                    seedBootstrapAdmin(bootstrapAdminUsername.trim(), bootstrapAdminPassword.trim(), bootstrapAdminEmail.trim());
+                } else {
+                    log.warn("Production security notice: No administrator account exists. Provide SCOS_BOOTSTRAP_ADMIN_USERNAME and SCOS_BOOTSTRAP_ADMIN_PASSWORD on startup to initialize the first super-admin.");
+                }
+            }
+        }
+    }
+
+    private void seedBootstrapAdmin(String username, String rawPassword, String email) {
+        UserEntity admin = new UserEntity();
+        admin.setUsername(username);
+        admin.setEmail(email);
+        admin.setPhoneNumber("+910000000000");
+        admin.setPasswordHash(passwordEncoder.encode(rawPassword));
+        admin.setFirstName("Bootstrap");
+        admin.setLastName("Administrator");
+        admin.setActive(true);
+        admin.setVerified(true);
+        admin = userRepository.save(admin);
+
+        RoleEntity superAdminRole = roleRepository.findByCode("SUPER_ADMIN").orElse(null);
+        if (superAdminRole != null) {
+            UserCommunityAccessEntity access = new UserCommunityAccessEntity();
+            access.setUser(admin);
+            access.setCommunityId(null);
+            access.setRole(superAdminRole);
+            access.setStatus("ACTIVE");
+            accessRepository.save(access);
+        }
+        log.info("Successfully provisioned initial bootstrap super-admin account: {}", username);
     }
 
     private void seedPermissionsAndRbac() {
@@ -270,7 +319,7 @@ public class DataInitializer implements CommandLineRunner {
             access.setStatus("ACTIVE");
             accessRepository.save(access);
         }
-        log.info("Default SCOS admin created: admin / Password@123");
+        log.info("Default development admin account created: admin (dev credentials)");
     }
 
     private void seedOperationalMaintenanceData() {
@@ -300,7 +349,7 @@ public class DataInitializer implements CommandLineRunner {
                 access.setStatus("ACTIVE");
                 accessRepository.save(access);
             }
-            log.info("Test technician created: technician.ramesh / Password@123");
+            log.info("Development technician account created: technician.ramesh");
             return tech;
         });
 

@@ -12,8 +12,10 @@ server:
 # JWT Token Configuration
 scos:
   jwt:
-    secret: c2Nvc19zdXBlcl9zZWN1cmVfZW50ZXJwcmlzZV9qd3Rfc2VjcmV0X2tleV8yMDI2X2FwYXJ0bWVudF9tYW5hZ2VtZW50X3N5c3RlbQ==
-    expiration-ms: 86400000 # 24 hours
+    secret: ${SCOS_JWT_SECRET:}
+    expiration-ms: ${SCOS_JWT_EXPIRATION_MS:86400000} # 24 hours
+  seed:
+    sample-data: false
 
 # OpenAPI Documentation
 springdoc:

@@ -27,7 +27,7 @@ public class AssetController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasAuthority('ASSET:WRITE') or hasAuthority('SCREEN:WORK_ORDERS')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasAuthority('ASSET:WRITE')")
     @Operation(summary="Register an asset in a community")
     public ApiResponse<AssetDto> create(@RequestParam UUID communityId,
         @Valid @RequestBody CreateAssetRequest request, Principal principal) {
@@ -69,7 +69,7 @@ public class AssetController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasAuthority('ASSET:WRITE') or hasAuthority('SCREEN:WORK_ORDERS')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasAuthority('ASSET:WRITE')")
     @Operation(summary="Update asset details")
     public ApiResponse<AssetDto> update(@PathVariable UUID id, @RequestParam UUID communityId,
         @Valid @RequestBody UpdateAssetRequest request, Principal principal) {
@@ -77,7 +77,7 @@ public class AssetController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasRole('TECHNICIAN') or hasAuthority('ASSET:WRITE') or hasAuthority('SCREEN:WORK_ORDERS')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('COMMUNITY_MANAGER') or hasRole('TECHNICIAN') or hasAuthority('ASSET:WRITE')")
     @Operation(summary="Update asset status and record audit event")
     public ApiResponse<AssetDto> updateStatus(@PathVariable UUID id, @RequestParam UUID communityId,
         @Valid @RequestBody UpdateAssetStatusRequest request, Principal principal) {

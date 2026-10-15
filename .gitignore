@@ -39,3 +39,9 @@ yarn-error.log*
 # Environment files
 **/.env
 **/.env.local
+
+# Test and report artifacts
+**/test-results/
+**/playwright-report/
+**/coverage/
+DBSchema.json

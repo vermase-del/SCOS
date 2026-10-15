@@ -1,0 +1,8 @@
+node_modules
+dist
+.angular
+.git
+test-results
+coverage
+playwright-report
+npm-debug.log*

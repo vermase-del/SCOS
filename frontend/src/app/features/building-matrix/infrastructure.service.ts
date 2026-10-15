@@ -70,9 +70,9 @@ export class InfrastructureService {
   }
 
   getUnits(buildingId?: string, occupancyStatus?: string): Observable<ApiResponse<PageResponse<UnitDetail>>> {
-    const params: any = {};
-    if (buildingId) params.buildingId = buildingId;
-    if (occupancyStatus) params.occupancyStatus = occupancyStatus;
+    const params: Record<string, string> = {};
+    if (buildingId) params['buildingId'] = buildingId;
+    if (occupancyStatus) params['occupancyStatus'] = occupancyStatus;
     return this.http.get<ApiResponse<PageResponse<UnitDetail>>>(`${this.apiUrl}/units`, { params });
   }
 

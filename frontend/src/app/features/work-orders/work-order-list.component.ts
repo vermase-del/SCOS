@@ -9,7 +9,6 @@ import {
   WorkOrder,
   WorkOrderCategory,
   WorkOrderPriority,
-  WorkOrderScope,
   WorkOrderStatus,
   WorkOrderSummary,
   WorkOrderType
