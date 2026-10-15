@@ -30,11 +30,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var authentication = tokenProvider.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
+                UUID tokenCommunityId = tokenProvider.getCommunityIdFromToken(jwt);
                 String communityHeader = request.getHeader("X-Community-Id");
                 if (communityHeader != null && !communityHeader.isBlank()) {
                     try {
-                        TenantContext.setCommunityId(UUID.fromString(communityHeader));
-                    } catch (IllegalArgumentException ignored) {}
+                        UUID headerCommunityId = UUID.fromString(communityHeader.trim());
+                        boolean isSuperAdmin = authentication.getAuthorities().stream()
+                                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("SUPER_ADMIN"));
+
+                        if (isSuperAdmin || (tokenCommunityId != null && tokenCommunityId.equals(headerCommunityId))) {
+                            TenantContext.setCommunityId(headerCommunityId);
+                        } else if (tokenCommunityId != null) {
+                            // Non-superadmin cannot spoof arbitrary community via header; lock to token
+                            TenantContext.setCommunityId(tokenCommunityId);
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                        if (tokenCommunityId != null) {
+                            TenantContext.setCommunityId(tokenCommunityId);
+                        }
+                    }
+                } else if (tokenCommunityId != null) {
+                    TenantContext.setCommunityId(tokenCommunityId);
                 }
             }
             filterChain.doFilter(request, response);

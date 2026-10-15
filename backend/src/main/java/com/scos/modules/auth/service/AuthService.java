@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 public class AuthService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserCommunityAccessRepository accessRepository;
@@ -53,8 +55,12 @@ public class AuthService {
             throw new UnauthorizedException("Invalid username or password");
         }
 
-        user.setLastLoginAt(Instant.now());
-        userRepository.save(user);
+        try {
+            user.setLastLoginAt(Instant.now());
+            userRepository.save(user);
+        } catch (Exception ex) {
+            log.warn("Non-fatal: could not update lastLoginAt for user {}: {}", user.getUsername(), ex.getMessage());
+        }
 
         List<UserCommunityAccessEntity> accessList = accessRepository.findByUserId(user.getId());
         List<String> roles = accessList.stream()

@@ -37,7 +37,7 @@ public abstract class AuditableEntity {
 
     @Version
     @Column(name = "version")
-    private Integer version = 0;
+    private Integer version;
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }

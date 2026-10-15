@@ -10,8 +10,7 @@ import {
   AssetStatus,
   AssetStatusHistory,
   AssetSummary,
-  CreateAssetRequest,
-  UpdateAssetStatusRequest
+  CreateAssetRequest
 } from '../work-orders/work-order.model';
 
 @Component({
@@ -457,7 +456,7 @@ export class AssetListComponent implements OnInit {
     });
   }
 
-  schedulePreventiveWorkOrder(asset: Asset): void {
+  schedulePreventiveWorkOrder(_asset: Asset): void {
     this.router.navigate(['/work-orders']);
   }
 }

@@ -53,7 +53,15 @@ public class PostgresFlywayMigrationReleaseGateTest {
 
     @BeforeEach
     void requirePostgres() {
-        assumeTrue(postgresAvailable, "PostgreSQL 16 is required for running Flyway migration release gates.");
+        if (!postgresAvailable) {
+            boolean failClosed = Boolean.parseBoolean(System.getenv().getOrDefault("SCOS_RELEASE_GATE_REQUIRE_POSTGRES",
+                    System.getProperty("scos.release-gate.require-postgres", "false")));
+            if (failClosed) {
+                fail("PostgreSQL 16 connection is strictly required for release-gate verification, but could not connect to " + dbUrl);
+            } else {
+                assumeTrue(false, "PostgreSQL 16 is not available; skipping local developer release-gate tests.");
+            }
+        }
     }
 
     @Test
@@ -294,6 +302,20 @@ public class PostgresFlywayMigrationReleaseGateTest {
         try (ResultSet rs = stmt.executeQuery(
                 "SELECT 1 FROM information_schema.columns WHERE table_schema = '" + schema + "' AND table_name = '" + tableName + "' AND column_name = '" + columnName + "'")) {
             assertTrue(rs.next(), "Column " + schema + "." + tableName + "." + columnName + " must exist");
+        }
+    }
+
+    @AfterAll
+    static void cleanupTestSchemas() {
+        if (postgresAvailable) {
+            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+                 Statement stmt = conn.createStatement()) {
+                stmt.execute("DROP SCHEMA IF EXISTS scos_gate_clean_test CASCADE");
+                stmt.execute("DROP SCHEMA IF EXISTS scos_gate_upgrade_test CASCADE");
+                System.out.println(">>> [POSTGRES RELEASE GATE] Successfully cleaned up temporary test schemas.");
+            } catch (SQLException e) {
+                System.err.println("Warning: Failed to clean up test schemas: " + e.getMessage());
+            }
         }
     }
 }

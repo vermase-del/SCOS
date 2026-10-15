@@ -15,3 +15,5 @@ scos:
   jwt:
     secret: c2Nvc19zdXBlcl9zZWN1cmVfZW50ZXJwcmlzZV9qd3Rfc2VjcmV0X2tleV8yMDI2X2FwYXJ0bWVudF9tYW5hZ2VtZW50X3N5c3RlbQ==
     expiration-ms: 3600000
+  seed:
+    sample-data: true

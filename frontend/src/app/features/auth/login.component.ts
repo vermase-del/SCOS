@@ -187,11 +187,15 @@ export class LoginComponent {
   errorMessage = signal<string | null>(null);
 
   onLogin(): void {
+    if (!this.username?.trim() || !this.password?.trim()) {
+      this.errorMessage.set('Please enter both username and password');
+      return;
+    }
     this.loading.set(true);
     this.errorMessage.set(null);
 
     this.authService.login({ username: this.username, password: this.password }).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading.set(false);
         this.router.navigate(['/dashboard']);
       },
