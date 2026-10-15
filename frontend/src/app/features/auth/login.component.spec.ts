@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../core/auth/auth.service';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -19,8 +19,8 @@ describe('LoginComponent', () => {
     await TestBed.configureTestingModule({
       imports: [LoginComponent, CommonModule, FormsModule],
       providers: [
-        { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        provideRouter([]),
+        { provide: AuthService, useValue: authServiceSpy }
       ]
     }).compileComponents();
 
@@ -38,7 +38,7 @@ describe('LoginComponent', () => {
     component.password = '';
     component.onLogin();
 
-    expect(component.errorMessage()).toBe('Please enter both username and password.');
+    expect(component.errorMessage()).toBe('Please enter both username and password');
     expect(authServiceSpy.login).not.toHaveBeenCalled();
   });
 

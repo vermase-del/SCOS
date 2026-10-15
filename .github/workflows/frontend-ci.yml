@@ -45,6 +45,8 @@ jobs:
 
       - name: Run Angular Unit Tests
         working-directory: ./frontend
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
         run: npm run test
 
       - name: Production Build
