@@ -261,7 +261,7 @@ public class PostgresFlywayMigrationReleaseGateTest {
             UUID workOrderB = UUID.randomUUID();
             try (PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO scos_work_orders (id, community_id, ticket_number, title, description, scope, category, priority, status, reported_by_user_id, sla_due_at, created_by, updated_by) " +
-                            "VALUES (?, ?, 'WO-2026-TEST02', 'Pump maintenance', 'Water pump service', 'COMMON_AREA', 'PLUMBING', 'NORMAL', 'OPEN', ?, CURRENT_TIMESTAMP + INTERVAL '24 hours', 'system', 'system')")) {
+                            "VALUES (?, ?, 'WO-2026-TEST02', 'Pump maintenance', 'Water pump service', 'COMMON_AREA', 'PLUMBING', 'MEDIUM', 'OPEN', ?, CURRENT_TIMESTAMP + INTERVAL '24 hours', 'system', 'system')")) {
                 ps.setObject(1, workOrderB);
                 ps.setObject(2, communityB);
                 ps.setObject(3, userB);
