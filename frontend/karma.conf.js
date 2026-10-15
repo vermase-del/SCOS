@@ -30,20 +30,22 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     },
-    reporters: ['progress', 'kjhtml'],
-    browsers: ['Chrome'],
+    reporters: ['progress'],
+    browsers: ['ChromeHeadlessCI'],
     customLaunchers: {
       ChromeHeadlessCI: {
-        base: 'ChromeHeadless',
+        base: 'Chrome',
         flags: [
+          '--headless',
           '--no-sandbox',
+          '--disable-setuid-sandbox',
           '--disable-gpu',
           '--disable-dev-shm-usage',
           '--remote-debugging-port=9222'
         ]
       }
     },
-    restartOnFileChange: true,
+    restartOnFileChange: false,
     singleRun: true
   });
 };
