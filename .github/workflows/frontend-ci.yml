@@ -47,7 +47,7 @@ jobs:
         working-directory: ./frontend
         env:
           CHROME_BIN: /usr/bin/google-chrome
-        run: npm run test
+        run: xvfb-run --auto-servernum npm run test
 
       - name: Production Build
         working-directory: ./frontend
